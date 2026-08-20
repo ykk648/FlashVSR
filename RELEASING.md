@@ -41,7 +41,7 @@ block_sparse_attn-0.0.2+cu124torch2.6sm80ptx1-cp311-cp311-linux_x86_64.whl
 Expected SHA-256:
 
 ```text
-1a8f3e7bf45f25dba2c2df83c9ecf13601b27ea5cdcea6e4283a1539e72f8c7d
+63a803d02abd64d9b3049564a1e90880339f98253fef68b23987445061c583c1
 ```
 
 After configuring the fork remote, a maintainer can create the release with:
