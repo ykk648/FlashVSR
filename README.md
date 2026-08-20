@@ -16,6 +16,28 @@
 
 ---
 
+### API service and uv deployment (fork extension)
+
+This fork adds a reproducible Python 3.11 / PyTorch 2.6 cu124 environment,
+verified ModelScope downloaders for FlashVSR v1 and v1.1, a prebuilt
+Block-Sparse-Attention wheel release workflow, and a single-GPU FastAPI job
+service with audio preservation.
+
+```bash
+# After downloading the wheel release asset into dist/:
+scripts/bootstrap_api.sh
+.venv/bin/python scripts/download_flashvsr_v1_1.py
+cp .env.example .env
+# Edit the input allowlist, then source .env and start:
+set -a; . ./.env; set +a
+uv run flashvsr-api
+```
+
+See [uv deployment](./UV_DEPLOYMENT.md), [API usage](./API_SERVICE.md), and
+[the release checklist](./RELEASING.md) for complete instructions.
+
+---
+
 ### 🌟 Abstract
 
 Diffusion models have recently advanced video restoration, but applying them to real-world video super-resolution (VSR) remains challenging due to high latency, prohibitive computation, and poor generalization to ultra-high resolutions. Our goal in this work is to make diffusion-based VSR practical by achieving **efficiency, scalability, and real-time performance**. To this end, we propose **FlashVSR**, the first diffusion-based one-step streaming framework towards real-time VSR. **FlashVSR runs at ∼17 FPS for 768 × 1408 videos on a single A100 GPU** by combining three complementary innovations: (i) a train-friendly three-stage distillation pipeline that enables streaming super-resolution, (ii) locality-constrained sparse attention that cuts redundant computation while bridging the train–test resolution gap, and (iii) a tiny conditional decoder that accelerates reconstruction without sacrificing quality. To support large-scale training, we also construct **VSR-120K**, a new dataset with 120k videos and 180k images. Extensive experiments show that FlashVSR scales reliably to ultra-high resolutions and achieves **state-of-the-art performance with up to ∼12× speedup** over prior one-step diffusion VSR models.

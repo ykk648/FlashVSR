@@ -1,0 +1,17 @@
+diff --git a/block_sparse_attn/block_sparse_attn_interface.py b/block_sparse_attn/block_sparse_attn_interface.py
+index dcc262d..79d84eb 100644
+--- a/block_sparse_attn/block_sparse_attn_interface.py
++++ b/block_sparse_attn/block_sparse_attn_interface.py
+@@ -1,10 +1,11 @@
+ # Adapted from https://github.com/Dao-AILab/flash-attention/blob/main/flash_attn/flash_blocksparse_attn_interface.py
+ 
+-import block_sparse_attn_cuda
+ import torch
+ import torch.nn as nn
+ from typing import Optional, Tuple
+ 
++import block_sparse_attn_cuda
++
+ 
+ def _get_block_size(device, head_dim, is_dropout, is_causal):
+     # This should match the block sizes in the CUDA kernel

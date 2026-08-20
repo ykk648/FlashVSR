@@ -11,10 +11,25 @@ build/
 
 # Virtual environments
 venv/
+.venv/
+.uv-cache/
+.uv-python/
+.modelscope-cache/
+.artifacts/
 .env/
+.env
+!.env.example
+
+# Downloaded models and inference artifacts
+examples/WanVSR/FlashVSR-v1.1/
+examples/WanVSR/FlashVSR/
+examples/WanVSR/results/
+runtime/api/
 
 # Logs
 *.log
+.coverage
+.pytest_cache/
 
 # IDE files
 .vscode/

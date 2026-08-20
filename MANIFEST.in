@@ -1,0 +1,7 @@
+include .env.example
+include API_SERVICE.md
+include RELEASING.md
+include UV_DEPLOYMENT.md
+recursive-include patches *.patch
+recursive-include scripts *.py *.sh
+recursive-include third_party *

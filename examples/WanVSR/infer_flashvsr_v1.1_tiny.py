@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
 import os, re, time
 import numpy as np
 from PIL import Image
@@ -35,7 +36,7 @@ def is_video(path):
     return os.path.isfile(path) and path.lower().endswith(('.mp4','.mov','.avi','.mkv'))
 
 def pil_to_tensor_neg1_1(img: Image.Image, dtype=torch.bfloat16, device='cuda'):
-    t = torch.from_numpy(np.asarray(img, np.uint8)).to(device=device, dtype=torch.float32)  # HWC
+    t = torch.from_numpy(np.array(img, dtype=np.uint8, copy=True)).to(device=device, dtype=torch.float32)  # HWC
     t = t.permute(2,0,1) / 255.0 * 2.0 - 1.0                                              # CHW in [-1,1]
     return t.to(dtype)
 
@@ -102,6 +103,8 @@ def prepare_input_tensor(path: str, scale: float = 4, dtype=torch.bfloat16, devi
         F = largest_8n1_leq(len(paths))
         if F == 0:
             raise RuntimeError(f"Not enough frames after padding in {path}. Got {len(paths)}.")
+        if F < 25:
+            raise RuntimeError(f"Tiny streaming inference requires at least 21 input frames. Got {N0}.")
         paths = paths[:F]
         print(f"[{os.path.basename(path)}] Target Frames (8n-3): {F-4}")
 
@@ -153,6 +156,9 @@ def prepare_input_tensor(path: str, scale: float = 4, dtype=torch.bfloat16, devi
         if F == 0:
             rdr.close()
             raise RuntimeError(f"Not enough frames after padding in {path}. Got {len(idx)}.")
+        if F < 25:
+            rdr.close()
+            raise RuntimeError(f"Tiny streaming inference requires at least 21 input frames. Got {total}.")
         idx = idx[:F]
         print(f"[{os.path.basename(path)}] Target Frames (8n-3): {F-4}")
 
@@ -193,17 +199,29 @@ def init_pipeline():
     pipe.init_cross_kv(); pipe.load_models_to_device(["dit","vae"])
     return pipe
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run FlashVSR v1.1 Tiny video super-resolution.")
+    parser.add_argument("inputs", nargs="*", help="Input videos or image-sequence directories.")
+    parser.add_argument("--output-dir", default="./results")
+    parser.add_argument("--scale", type=float, default=4.0)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--sparse-ratio", type=float, default=2.0)
+    return parser.parse_args()
+
+
 def main():
-    RESULT_ROOT = "./results"
+    args = parse_args()
+    RESULT_ROOT = args.output_dir
     os.makedirs(RESULT_ROOT, exist_ok=True)
-    inputs = [
+    default_inputs = [
         "./inputs/example0.mp4",
         "./inputs/example1.mp4",
         "./inputs/example2.mp4",
         "./inputs/example3.mp4",
     ]
-    seed, scale, dtype, device = 0, 4.0, torch.bfloat16, 'cuda'
-    sparse_ratio = 2.0      # Recommended: 1.5 or 2.0. 1.5 → faster; 2.0 → more stable.
+    inputs = args.inputs or default_inputs
+    seed, scale, dtype, device = args.seed, args.scale, torch.bfloat16, 'cuda'
+    sparse_ratio = args.sparse_ratio
     pipe = init_pipeline()
 
     for p in inputs:
